@@ -19,13 +19,17 @@ function tok_activate(){
 }
 function tok_init(){
 	add_action('category_edit_form_fields', 'tok_category_update_custom_fields', 10, 2);
-	add_action('edited_category', 'tok_cat_save');
-
+	add_action('category_add_form_fields', 'tok_category_create_custom_fields');
+	add_action('create_term', 'tok_cat_create');
+	add_action('edit_term', 'tok_cat_update');
 }
 function tok_connect_scripts(){
 	wp_enqueue_media();
 	wp_register_script('tok_upload', plugins_url('tok-upload.js', __FILE__));
 	wp_enqueue_script('tok_upload', array('jquery'));
+	wp_localize_script('tok_upload', 'tok_default_image', array('img' => plugins_url('default.png', __FILE__)));
+	wp_register_script('tok_fix', plugins_url('tok-fix.js', __FILE__));
+	wp_enqueue_script('tok_fix', array('jquery'));
 }
 function tok_category_update_custom_fields($terms, $taxonomy){?>
 
@@ -54,13 +58,52 @@ function tok_category_update_custom_fields($terms, $taxonomy){?>
 
 }
 
+function tok_category_create_custom_fields($terms){ ?>
+    <tr class="form-field">
+        <th scope="row">
+            <label for="tok_image_box">Картинка:</label>
+        </th>
+        <td>
+            <input type="button" value="Добавить картинку" id="tok_add_image_button">
+            <input type="button" value="Удалить картинку" id="tok_remove_image_button">
+            <input type="hidden" value="" name="tok_image" id="tok_image">
+			<?php
+			global $wpdb;
+			$image_url = plugins_url('default.png', __FILE__);
+			$getImage = $terms->tok_image;
+			if ($getImage){
+				$image_url = $getImage;
+			}
+			?>
 
-function tok_cat_save(){
+            <br><img id="tok_preview_image" src="<?php echo $image_url ?>" width="200" height="200" style="margin-top: 15px;">
+            <p class="description">Загрузите картинку с помощью этих кнопок, а настройки расположения задайте в настройках плагина.</p>
+        </td>
+    </tr>
+
+    <?php
+}
+
+function tok_cat_update(){
 	global $wpdb;
-	$wpdb->flush();
-	if ($_POST['tok_image']){
-	    $wpdb->update('wp_terms', array(
-	           'tok_image' => $_POST['tok_image']
-        ), array('term_id' => $_POST['tag_ID']));
+	if ($_POST['tok_image'] && $_POST['tok_image'] !== 'delete'){
+		if ($_POST['tok_image'] == 'delete'){
+			$wpdb->update( 'wp_terms', array(
+				'tok_image' => ''
+			), array( 'name' => $_POST['name'] ) );
+        } else {
+			$wpdb->update( 'wp_terms', array(
+				'tok_image' => $_POST['tok_image']
+			), array( 'name' => $_POST['name'] ) );
+		}
     }
+}
+
+function tok_cat_create(){
+	global $wpdb;
+	if ($_POST['tok_image'] && $_POST['tok_image'] !== 'delete'){
+		$wpdb->update('wp_terms', array(
+			'tok_image' => $_POST['tok_image']
+		), array('name' => $_POST['tag-name']));
+	}
 }
