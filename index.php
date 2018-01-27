@@ -86,7 +86,7 @@ function tok_category_create_custom_fields($terms){ ?>
 
 function tok_cat_update(){
 	global $wpdb;
-	if ($_POST['tok_image'] && $_POST['tok_image'] !== 'delete'){
+	if ($_POST['tok_image']){
 		if ($_POST['tok_image'] == 'delete'){
 			$wpdb->update( 'wp_terms', array(
 				'tok_image' => ''
