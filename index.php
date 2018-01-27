@@ -109,3 +109,53 @@ function tok_cat_create(){
 		), array('name' => $_POST['tag-name']));
 	}
 }
+
+function tok_get_image_url($id = NULL, $count = NULL){
+    if (!$id){
+        if (is_single()){
+	        $categories = get_the_category();
+	        if (!$count){
+	            return $categories[0]->tok_image;
+            } elseif(is_int($count)) {
+	            $i = 0;
+	            $arr = [];
+	            while (($i < $count) && ($i < count($categories))){
+	                $arr[$i] = $categories[$i]->tok_image;
+	                $i++;
+                }
+                return $arr;
+            } else {
+	            return 'Ошибка типа во втором параметре';
+            }
+        } elseif (is_category()){
+	        $categories = get_the_category();
+	        if (!$count){
+		        return $categories[0]->tok_image;
+	        } else {
+		        $i = 0;
+		        $arr = [];
+		        while (($i < $count) && ($i < count($categories))){
+			        $arr[$i] = $categories[$i]->tok_image;
+			        $i++;
+		        }
+		        return $arr;
+	        }
+        }
+        else {
+            return 'Данная функция без параметров может применяться исключительно внутри записей или категорий';
+        }
+    } else {
+        global $wpdb;
+        if (is_int($id)){
+            $result = $wpdb->get_results('SELECT `tok_image` FROM `wp_terms` WHERE `term_id` = '.$id);
+            $wpdb->flush();
+            return $result[0]->tok_image;
+        } elseif(is_string($id)) {
+	        $result = $wpdb->get_results('SELECT `tok_image` FROM `wp_terms` WHERE `name` = '.$id);
+	        $wpdb->flush();
+	        return $result[0]->tok_image;
+        } else {
+            return 'Ошибка типа в первом параметре!';
+        }
+    }
+}
