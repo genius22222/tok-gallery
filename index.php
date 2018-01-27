@@ -14,6 +14,8 @@ add_action('admin_init', 'tok_init', 1);
 add_action('admin_enqueue_scripts', 'tok_connect_scripts');
 
 function tok_activate(){
+    if (get_bloginfo('version') < 3.5) wp_die('Версия вашей WP = '.get_bloginfo('version').', а минимальная версия для работы плагина 3.5', 'Ошибка версии', array('back_link' => true) );
+
 	global $wpdb;
 	$wpdb->get_results('ALTER TABLE `wp_terms` ADD `tok_image` TEXT NOT NULL AFTER `term_group`');
 }
